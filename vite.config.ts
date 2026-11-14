@@ -3,8 +3,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
+// Site is hosted at the domain root (custom domain on GitHub Pages:
+// kradvisorygroup.co.za). The app uses root-absolute asset/link URLs
+// (e.g. /hero.jpg, /services), so the base must stay "/".
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {
