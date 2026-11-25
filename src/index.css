@@ -42,7 +42,24 @@
   --muted: oklch(95.5% 0.008 88);
   --muted-foreground: oklch(48% 0.028 255);
 
+  /* Premium editorial section surfaces (sRGB hex per brand brief).
+     Used to create alternating ivory/stone rhythm across the Services bands —
+     the single source of truth for these two tones, mapped to Tailwind as
+     `bg-surface-ivory` / `bg-surface-stone`. */
+  --surface-ivory: #f7f4ed;
+  --surface-stone: #f1eee7;
+
   --radius: 0.625rem;
+
+  /* Motion system — mirrors src/animations/motionTokens.ts. See the MOTION
+     SYSTEM block below and motion-design.md §4.1. */
+  --reveal-duration: 760ms;
+  --reveal-distance: 20px;
+  --reveal-blur: 4px;
+  --hero-distance: 16px;
+  --hero-blur: 6px;
+  --hover: 260ms;
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
@@ -221,28 +238,8 @@
   }
 }
 
-/* Entrance animation — staggered rise/fade. Disabled for reduced motion. */
+/* Very slow drift on the brass glow for living depth, not distraction. */
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes hero-rise {
-    from {
-      opacity: 0;
-      transform: translateY(18px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .hero-animate {
-    opacity: 0;
-    animation: hero-rise 0.9s cubic-bezier(0.16, 1, 0.32, 1) forwards;
-  }
-  .hero-delay-1 { animation-delay: 0.08s; }
-  .hero-delay-2 { animation-delay: 0.18s; }
-  .hero-delay-3 { animation-delay: 0.30s; }
-  .hero-delay-4 { animation-delay: 0.42s; }
-
-  /* Very slow drift on the brass glow for living depth, not distraction. */
   @keyframes hero-drift {
     0%, 100% { opacity: 0.55; transform: translate3d(0, 0, 0); }
     50% { opacity: 0.8; transform: translate3d(0, -10px, 0); }
@@ -252,6 +249,118 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-animate { opacity: 1; }
+/*
+ * ---------------------------------------------------------------------------
+ * MOTION SYSTEM (progressive enhancement; see
+ * .agents/tasks/motion-experience/motion-design.md §3–§5).
+ *
+ * No-flash model: the at-rest DOM is the fully-visible authored layout. Every
+ * hidden pre-animation state below is gated BOTH behind a JS-added class
+ * (`.motion-ready` on <html> for the IO reveals; `.hero-motion-ready` on the
+ * hero root for the GSAP hero) AND behind `prefers-reduced-motion: no-preference`.
+ * Server HTML carries neither class, so the first painted frame — and the
+ * no-JS / crawler / reduced-motion experience — is always fully visible.
+ * ---------------------------------------------------------------------------
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /* [data-reveal] scroll reveals (CSS + shared IntersectionObserver).
+     NOTE: no will-change on the resting hidden state — it is promoted
+     transiently in JS one frame before reveal and cleared on transitionend
+     (see src/hooks/useReveal.ts), so only actively-animating nodes carry it. */
+  .motion-ready [data-reveal]:not(.is-revealed) {
+    opacity: 0;
+    transform: translateY(var(--reveal-distance));
+    filter: blur(var(--reveal-blur));
+  }
+  .motion-ready [data-reveal] {
+    transition:
+      opacity var(--reveal-duration) var(--ease-cinematic),
+      transform var(--reveal-duration) var(--ease-cinematic),
+      filter var(--reveal-duration) var(--ease-cinematic);
+  }
+
+  /* GSAP hero line-mask: inner spans sit fully below their overflow:hidden
+     mask until the timeline reveals them. */
+  .hero-motion-ready .hero-line-mask {
+    overflow: hidden;
+  }
+  .hero-motion-ready .hero-line-mask .hero-line-inner {
+    transform: translateY(110%);
+    opacity: 0;
+    filter: blur(var(--hero-blur));
+  }
+
+  /* Non-heading hero elements (eyebrow, rule, paragraph, CTA, chips, scroll
+     cue): hidden until the GSAP timeline reveals them. */
+  .hero-motion-ready .hero-reveal {
+    opacity: 0;
+    transform: translateY(var(--hero-distance));
+  }
+
+  /* Effect 8 — Referral Programme Terms (CRITICAL). The terms must read
+     immediately: a SHORT, no-blur fade/rise only, so even with the capped
+     per-row stagger the last row is fully visible well under ~1s. These rows
+     still obey the structural no-flash model (fully visible in SSG HTML, with
+     JS off, and under reduced motion); this class only changes the transition
+     profile for the brief post-.motion-ready reveal — it never gates, hides,
+     delays-long, or JS-withholds the terms. */
+  .motion-ready [data-reveal].reveal-terms:not(.is-revealed) {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: none;
+  }
+  .motion-ready [data-reveal].reveal-terms {
+    transition:
+      opacity 420ms var(--ease-cinematic),
+      transform 420ms var(--ease-cinematic);
+  }
+}
+
+/* Shared card hover lift. Hover-gated, so it is safe outside the
+   reduced-motion media block (no resting-state change). Two drivers:
+   (1) a parent with the `group` class (used by the Home "What we do" cards,
+       where the <Link class="group"> wrapper carries hover/focus-within and
+       the inner <Card> carries .card-lift — focus-within parity on the Link);
+   (2) the card element itself when it is the hover surface and also carries
+       the `group` class (About / Referral / Contact cards), so the lift and
+       keyboard focus-within apply to the same element. */
+.card-lift {
+  transition:
+    transform var(--hover) var(--ease-cinematic),
+    box-shadow var(--hover) var(--ease-cinematic),
+    border-color var(--hover) var(--ease-cinematic);
+}
+.group:hover .card-lift,
+.group:focus-within .card-lift,
+.card-lift.group:hover,
+.card-lift.group:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px -24px oklch(20% 0.045 258 / 0.35);
+}
+
+/* Effect 9 — Contact form field focus motion. A gentle ~200ms border-color +
+   soft brass-tinted box-shadow transition on :focus only. The existing
+   focus-visible:ring-2 ring-brass-deep is preserved (set at the call sites);
+   this adds no motion on typing (onChange) and never gates/hides validation.
+   Hover/focus-gated, so it is safe outside the reduced-motion block. */
+.field-motion {
+  transition:
+    border-color 200ms var(--ease-cinematic),
+    box-shadow 200ms var(--ease-cinematic);
+}
+.field-motion:focus {
+  border-color: var(--brass-deep);
+  box-shadow: 0 0 0 3px oklch(62% 0.125 75 / 0.12);
+}
+
+/* Effect 10 — hero primary CTA arrow nudge. The hero CTA renders a trailing
+   "→"; on hover/focus the arrow translates 3px right. Hover/focus-gated, so no
+   resting-state change and nothing applies on touch without intent. */
+.cta-arrow {
+  display: inline-block;
+  transition: transform var(--hover) var(--ease-cinematic);
+}
+.btn-hero-primary:hover .cta-arrow,
+.btn-hero-primary:focus-visible .cta-arrow {
+  transform: translateX(3px);
 }

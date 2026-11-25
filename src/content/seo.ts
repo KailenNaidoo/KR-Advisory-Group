@@ -20,21 +20,21 @@ export const meta: Record<string, RouteMeta> = {
   },
   '/about': {
     path: '/about',
-    title: 'About | KR Advisory Group',
+    title: 'About Us | CA(SA)-Led Practice | KR Advisory Group',
     description:
-      'KR Advisory Group is a CA(SA)-led practice serving growing businesses and public institutions across South Africa.',
+      'Meet KR Advisory Group — a CA(SA)-led accounting and advisory practice serving growing businesses and public institutions across South Africa.',
   },
   '/contact': {
     path: '/contact',
-    title: 'Contact | KR Advisory Group',
+    title: 'Contact Us | Book a Consultation | KR Advisory Group',
     description:
-      'Book a free consultation with KR Advisory Group — accounting, tax, internal audit, audit readiness, business advisory and funding preparation.',
+      'Contact KR Advisory Group in Midrand, Johannesburg to discuss accounting, tax, internal audit, audit readiness and business advisory. Call or WhatsApp 073 499 7148.',
   },
   '/referral': {
     path: '/referral',
-    title: 'Referral Programme | KR Advisory Group',
+    title: 'Referral Programme | Refer a Business | KR Advisory Group',
     description:
-      'Refer a business. Earn rewards. Build stronger businesses together with KR Advisory Group.',
+      'Refer a business to KR Advisory Group and help growing organisations access CA(SA)-led accounting, tax, internal audit, audit-readiness and advisory support.',
   },
 };
 

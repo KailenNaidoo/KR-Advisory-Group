@@ -4,6 +4,7 @@ import { business, navLinks } from '@/content/business';
 import { Container } from '@/components/primitives/Container';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { cn } from '@/lib/cn';
+import { asset } from '@/lib/asset';
 
 /**
  * Luxury corporate sticky header.
@@ -55,7 +56,7 @@ export function Header() {
           aria-label={`${business.name} — home`}
         >
           <img
-            src="/kr-logo.png"
+            src={asset('/kr-logo.png')}
             alt=""
             width={36}
             height={36}

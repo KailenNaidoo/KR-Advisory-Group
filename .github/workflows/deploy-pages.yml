@@ -1,0 +1,78 @@
+name: Deploy review site to GitHub Pages
+
+# Review-only deployment. Builds the Vite SSG app with the project-pages base
+# path and a noindex review flag, then publishes dist/ to GitHub Pages. This is
+# a separate client-review URL and does NOT touch the production domain
+# (Netlify/Cloudflare), which builds without these env vars.
+
+on:
+  # Runs on pushes to the pages-deploy branch, and can be triggered manually.
+  push:
+    branches: [pages-deploy]
+  workflow_dispatch:
+
+# Minimal permissions required by the Pages deploy actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one in-flight Pages deployment at a time; don't cancel a running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (review config — subpath base + noindex)
+        env:
+          GITHUB_PAGES: 'true'
+          # Base must match the project-pages subpath: /<repo>/
+          PAGES_BASE: /${{ github.event.repository.name }}/
+          VITE_REVIEW_BUILD: 'true'
+        run: npm run build
+
+      - name: Add SPA deep-link fallback (404 -> app shell)
+        # GitHub Pages serves 404.html for unknown paths. Copying the built
+        # index.html to 404.html lets client-side routes resolve on direct
+        # navigation / refresh (e.g. /KR-Advisory-Group/about).
+        run: cp dist/index.html dist/404.html
+
+      - name: Disable Jekyll processing
+        run: touch dist/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          # Auto-enable Pages (with GitHub Actions as source) if it isn't
+          # already — guards against the "action reports success before the
+          # Pages site is provisioned" 404 on a brand-new Pages setup. Requires
+          # the pages:write + id-token:write permissions already granted above.
+          enablement: true

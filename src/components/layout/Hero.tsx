@@ -1,6 +1,8 @@
 import { Container } from '@/components/primitives/Container';
+import { HeroReveal } from '@/components/motion/HeroReveal';
 import { business } from '@/content/business';
 import { home } from '@/content/pages';
+import { asset } from '@/lib/asset';
 
 /**
  * Immersive, award-quality hero for the home page.
@@ -23,15 +25,18 @@ export function Hero() {
   const headlineLines = ['Financial clarity.', 'Stronger controls.', 'Better business decisions.'];
 
   return (
-    <section
+    <HeroReveal
+      as="section"
       aria-labelledby="home-hero-title"
       className="hero-surface relative flex min-h-[100svh] items-center overflow-hidden"
     >
-      {/* Full-width immersive background image (decorative; headline carries meaning). */}
+      {/* Full-width immersive background image (decorative; headline carries meaning).
+          data-hero-parallax marks it as the Effect-6 scrubbed parallax target. */}
       <img
-        src={home.heroImage.src}
+        src={asset(home.heroImage.src)}
         alt=""
         aria-hidden="true"
+        data-hero-parallax
         className="absolute inset-0 h-full w-full object-cover"
         width={1920}
         height={1280}
@@ -55,22 +60,29 @@ export function Hero() {
       {/* Content — vertically centred. */}
       <Container className="relative z-10 py-28 sm:py-32">
         <div className="max-w-4xl">
-          <p className="hero-animate hero-delay-1 font-mono text-[0.7rem] uppercase tracking-[0.3em] text-brass sm:text-xs">
+          <p className="hero-reveal font-mono text-[0.7rem] uppercase tracking-[0.3em] text-brass sm:text-xs">
             CA(SA)-led · Accounting · Tax · Internal Audit
           </p>
 
           {/* Thin brass horizon rule for architectural structure. */}
-          <div className="hero-animate hero-delay-1 hero-rule mt-6 h-px w-28" aria-hidden="true" />
+          <div className="hero-reveal hero-rule mt-6 h-px w-28" aria-hidden="true" />
 
+          {/* Line-by-line masked reveal mapped onto the EXISTING nested spans
+              (DECISION 2): hero-line-mask on each outer .block span, and
+              hero-line-inner on each inner span. No new elements are inserted;
+              the line-3 brass accent is preserved. */}
           <h1
             id="home-hero-title"
-            className="hero-animate hero-delay-2 mt-7 font-display font-light leading-[0.98] tracking-[-0.02em] text-[clamp(2.6rem,7vw,5.75rem)]"
+            className="mt-7 font-display font-light leading-[0.98] tracking-[-0.02em] text-[clamp(2.6rem,7vw,5.75rem)]"
             style={{ color: 'oklch(98% 0.01 88)' }}
           >
             {headlineLines.map((line, i) => (
-              <span key={line} className="block">
+              <span key={line} className="hero-line-mask block">
                 {/* Final clause accented in brass for emphasis. */}
-                <span style={i === headlineLines.length - 1 ? { color: 'oklch(80% 0.115 82)' } : undefined}>
+                <span
+                  className="hero-line-inner"
+                  style={i === headlineLines.length - 1 ? { color: 'oklch(80% 0.115 82)' } : undefined}
+                >
                   {line}
                 </span>
               </span>
@@ -78,20 +90,20 @@ export function Hero() {
           </h1>
 
           <p
-            className="hero-animate hero-delay-3 mt-8 max-w-2xl text-lg leading-relaxed sm:text-xl"
+            className="hero-reveal mt-8 max-w-2xl text-lg leading-relaxed sm:text-xl"
             style={{ color: 'oklch(88% 0.012 258)' }}
           >
             {home.heroSubCopy}
           </p>
 
           {/* CTA group — directly beneath the value proposition. */}
-          <div className="hero-animate hero-delay-3 mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="hero-reveal mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <a
               href="/services"
               className="btn-hero-primary inline-flex items-center justify-center gap-2 rounded px-7 py-3.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
             >
               Explore Our Services
-              <span aria-hidden="true">→</span>
+              <span aria-hidden="true" className="cta-arrow">→</span>
             </a>
             {/* Secondary CTA rendered directly (not via the themed Button) so the
                 glass ghost treatment is not overridden by brass-fill utilities. */}
@@ -106,7 +118,7 @@ export function Hero() {
           </div>
 
           {/* Glass credential chips — verified positioning facts only. */}
-          <div className="hero-animate hero-delay-4 mt-14 flex flex-wrap gap-3">
+          <div className="hero-reveal mt-14 flex flex-wrap gap-3">
             {['CA(SA)-led practice', 'Midrand · Johannesburg', 'Business & public sector'].map((chip) => (
               <span
                 key={chip}
@@ -122,7 +134,7 @@ export function Hero() {
 
       {/* Scroll cue. */}
       <div
-        className="hero-animate hero-delay-4 absolute inset-x-0 bottom-6 z-10 flex justify-center"
+        className="hero-reveal absolute inset-x-0 bottom-6 z-10 flex justify-center"
         aria-hidden="true"
       >
         <span
@@ -132,6 +144,6 @@ export function Hero() {
           Scroll
         </span>
       </div>
-    </section>
+    </HeroReveal>
   );
 }

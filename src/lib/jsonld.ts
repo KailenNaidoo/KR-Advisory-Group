@@ -79,6 +79,50 @@ export function serviceList(): Json[] {
 }
 
 /**
+ * ContactPoint + PostalAddress for the Contact page. Built from verified
+ * facts only: the split postal address above, the verified WhatsApp number
+ * (business.whatsapp.e164) and the primary enquiry email. No hours or map
+ * data is included (both are [NOT VERIFIED]).
+ */
+export function contactPoint(): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': ORG_ID,
+    name: business.name,
+    url: SITE_URL,
+    address: postalAddress,
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      telephone: business.whatsapp.e164,
+      email: business.emails.ralephenya,
+      areaServed: 'ZA',
+      availableLanguage: 'en',
+    },
+  };
+}
+
+/**
+ * FAQPage built from the one verified Contact Q&A. Only the single confirmed
+ * question/answer is emitted — no extra questions are fabricated.
+ */
+export function faqPage(items: { question: string; answer: string }[]): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+/**
  * BreadcrumbList for an interior page. Always starts at Home, then the page.
  * `name` is the page's breadcrumb label, `path` its route path.
  */

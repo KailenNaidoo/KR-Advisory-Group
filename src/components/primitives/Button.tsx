@@ -5,7 +5,8 @@ type Variant = 'primary' | 'secondary';
 
 const base =
   'inline-flex items-center justify-center gap-2 rounded font-medium ' +
-  'px-5 py-3 text-sm transition-colors focus-visible:outline-none ' +
+  'px-5 py-3 text-sm shadow-sm transition-all duration-200 ease-out ' +
+  'hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none ' +
   'focus-visible:ring-2 focus-visible:ring-brass-deep focus-visible:ring-offset-2 ' +
   'focus-visible:ring-offset-background';
 

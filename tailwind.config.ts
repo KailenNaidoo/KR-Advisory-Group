@@ -19,6 +19,10 @@ const config: Config = {
           DEFAULT: 'var(--muted)',
           foreground: 'var(--muted-foreground)',
         },
+        surface: {
+          ivory: 'var(--surface-ivory)',
+          stone: 'var(--surface-stone)',
+        },
       },
       borderRadius: {
         DEFAULT: 'var(--radius)',
